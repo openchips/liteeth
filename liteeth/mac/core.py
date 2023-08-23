@@ -43,8 +43,8 @@ class LiteEthMACCore(Module, AutoCSR):
             cd_rx       = "sys"
             datapath_dw = core_dw
         else:
-            cd_tx       = "eth_tx"
-            cd_rx       = "eth_rx"
+            cd_tx       = "xgmiiphy_eth_tx"
+            cd_rx       = "xgmiiphy_eth_rx"
             datapath_dw = phy_dw
         if isinstance(phy, LiteEthPHYModel):
             with_preamble_crc = False # Disable Preamble/CRC with PHY Model for direct connection to the Ethernet tap.
@@ -62,7 +62,7 @@ class LiteEthMACCore(Module, AutoCSR):
             def add_cdc(self):
                 tx_cdc = stream.ClockDomainCrossing(eth_phy_description(core_dw),
                     cd_from  = "sys",
-                    cd_to    = "eth_tx",
+                    cd_to    = "xgmiiphy_eth_tx",
                     depth    = tx_cdc_depth,
                     buffered = tx_cdc_buffered,
                 )
@@ -73,13 +73,13 @@ class LiteEthMACCore(Module, AutoCSR):
                 tx_converter = stream.StrideConverter(
                     description_from = eth_phy_description(core_dw),
                     description_to   = eth_phy_description(phy_dw))
-                tx_converter = ClockDomainsRenamer("eth_tx")(tx_converter)
+                tx_converter = ClockDomainsRenamer("xgmiiphy_eth_tx")(tx_converter)
                 self.submodules += tx_converter
                 self.pipeline.append(tx_converter)
 
             def add_last_be(self):
                 tx_last_be = last_be.LiteEthMACTXLastBE(phy_dw)
-                tx_last_be = ClockDomainsRenamer("eth_tx")(tx_last_be)
+                tx_last_be = ClockDomainsRenamer("xgmiiphy_eth_tx")(tx_last_be)
                 self.submodules += tx_last_be
                 self.pipeline.append(tx_last_be)
 
@@ -104,7 +104,7 @@ class LiteEthMACCore(Module, AutoCSR):
 
             def add_gap(self):
                 tx_gap = gap.LiteEthMACGap(phy_dw)
-                tx_gap = ClockDomainsRenamer("eth_tx")(tx_gap)
+                tx_gap = ClockDomainsRenamer("xgmiiphy_eth_tx")(tx_gap)
                 self.submodules += tx_gap
                 self.pipeline.append(tx_gap)
 
@@ -178,7 +178,7 @@ class LiteEthMACCore(Module, AutoCSR):
 
             def add_last_be(self):
                 rx_last_be = last_be.LiteEthMACRXLastBE(phy_dw)
-                rx_last_be = ClockDomainsRenamer("eth_rx")(rx_last_be)
+                rx_last_be = ClockDomainsRenamer("xgmiiphy_eth_rx")(rx_last_be)
                 self.submodules += rx_last_be
                 self.pipeline.append(rx_last_be)
 
@@ -186,13 +186,13 @@ class LiteEthMACCore(Module, AutoCSR):
                 rx_converter = stream.StrideConverter(
                     description_from = eth_phy_description(phy_dw),
                     description_to   = eth_phy_description(core_dw))
-                rx_converter = ClockDomainsRenamer("eth_rx")(rx_converter)
+                rx_converter = ClockDomainsRenamer("xgmiiphy_eth_rx")(rx_converter)
                 self.submodules += rx_converter
                 self.pipeline.append(rx_converter)
 
             def add_cdc(self):
                 rx_cdc = stream.ClockDomainCrossing(eth_phy_description(core_dw),
-                    cd_from  = "eth_rx",
+                    cd_from  = "xgmiiphy_eth_rx",
                     cd_to    = "sys",
                     depth    = rx_cdc_depth,
                     buffered = rx_cdc_buffered,
